@@ -5,8 +5,9 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.config import Settings
-from app.routes import health
-from db import init_db
+from app.routes import health, stream
+from db import DEFAULT_USER_ID, get_connection, init_db
+from market import PriceCache, create_market_source
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -15,12 +16,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         init_db(settings.db_path)
-        yield
+        conn = get_connection(settings.db_path)
+        try:
+            rows = conn.execute("SELECT ticker FROM watchlist WHERE user_id = ?", (DEFAULT_USER_ID,)).fetchall()
+        finally:
+            conn.close()
+        source = create_market_source(
+            app.state.price_cache,
+            [row["ticker"] for row in rows],
+            massive_api_key=settings.massive_api_key,
+            massive_poll_interval=settings.massive_poll_interval,
+        )
+        app.state.market_source = source
+        await source.start()
+        try:
+            yield
+        finally:
+            await source.stop()
 
     app = FastAPI(title="FinAlly", lifespan=lifespan)
     app.state.settings = settings
+    app.state.price_cache = PriceCache()
 
     app.include_router(health.router)
+    app.include_router(stream.router)
 
     # Mounted last so /api/* routes registered above take precedence.
     if settings.static_dir.is_dir():
