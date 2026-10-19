@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -5,9 +6,10 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.config import Settings
-from app.routes import health, stream, watchlist
+from app.routes import health, portfolio, stream, watchlist
 from db import DEFAULT_USER_ID, get_connection, init_db
 from market import PriceCache, create_market_source
+from portfolio import snapshot_loop
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -29,9 +31,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         app.state.market_source = source
         await source.start()
+        snapshots = asyncio.create_task(
+            snapshot_loop(settings.db_path, app.state.price_cache, settings.snapshot_interval)
+        )
         try:
             yield
         finally:
+            snapshots.cancel()
+            await asyncio.gather(snapshots, return_exceptions=True)
             await source.stop()
 
     app = FastAPI(title="FinAlly", lifespan=lifespan)
@@ -41,6 +48,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health.router)
     app.include_router(stream.router)
     app.include_router(watchlist.router)
+    app.include_router(portfolio.router)
 
     # Mounted last so /api/* routes registered above take precedence.
     if settings.static_dir.is_dir():

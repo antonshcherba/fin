@@ -19,3 +19,4 @@ class Settings:
         default_factory=lambda: float(os.environ.get("MASSIVE_POLL_INTERVAL") or 15.0)
     )
     sse_interval: float = 0.5
+    snapshot_interval: float = 30.0
