@@ -4,3 +4,6 @@ node_modules/
 .venv/
 frontend/out/
 __pycache__/
+test/node_modules/
+test/test-results/
+test/playwright-report/
