@@ -1,0 +1,6 @@
+db/finally.db
+.env
+node_modules/
+.venv/
+frontend/out/
+__pycache__/
