@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.config import Settings
-from app.routes import health, portfolio, stream, watchlist
+from app.routes import chat, health, portfolio, stream, watchlist
 from db import DEFAULT_USER_ID, get_connection, init_db
 from market import PriceCache, create_market_source
 from portfolio import snapshot_loop
@@ -49,6 +49,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(stream.router)
     app.include_router(watchlist.router)
     app.include_router(portfolio.router)
+    app.include_router(chat.router)
 
     # Mounted last so /api/* routes registered above take precedence.
     if settings.static_dir.is_dir():
