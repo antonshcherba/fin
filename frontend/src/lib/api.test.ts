@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, api } from './api'
+import { ApiError, api, normalizeHistory } from './api'
 
 const mockFetch = (res: Partial<Response> & { json?: () => Promise<unknown> }) =>
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: 'OK', ...res }))
@@ -34,5 +34,32 @@ describe('api', () => {
   it('handles 204 without a body', async () => {
     mockFetch({ status: 204 })
     expect(await api.del('/api/watchlist/AAPL')).toBeUndefined()
+  })
+})
+
+describe('normalizeHistory', () => {
+  const snap = { total_value: 10000, recorded_at: '2026-01-01T00:00:00Z' }
+
+  it('accepts a bare array or a wrapped one', () => {
+    expect(normalizeHistory([snap])).toEqual([snap])
+    expect(normalizeHistory({ snapshots: [snap] })).toEqual([snap])
+    expect(normalizeHistory({ history: [snap] })).toEqual([snap])
+  })
+
+  it('drops malformed entries and unknown shapes', () => {
+    expect(normalizeHistory([snap, { total_value: 'x' }, null, { total_value: 1 }])).toEqual([snap])
+    expect(normalizeHistory(null)).toEqual([])
+    expect(normalizeHistory({})).toEqual([])
+  })
+})
+
+describe('api.trade', () => {
+  it('POSTs the trade to /api/portfolio/trade', async () => {
+    mockFetch({ json: async () => ({}) })
+    await api.trade({ ticker: 'AAPL', quantity: 2, side: 'buy' })
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/portfolio/trade',
+      expect.objectContaining({ method: 'POST', body: '{"ticker":"AAPL","quantity":2,"side":"buy"}' }),
+    )
   })
 })

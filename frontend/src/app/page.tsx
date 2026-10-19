@@ -1,5 +1,9 @@
 import { Header } from '@/components/Header'
 import { Panel, Placeholder } from '@/components/Panel'
+import { PnlChart } from '@/components/PnlChart'
+import { PortfolioHeatmap } from '@/components/PortfolioHeatmap'
+import { PositionsTable } from '@/components/PositionsTable'
+import { TradeBar } from '@/components/TradeBar'
 
 export default function Home() {
   return (
@@ -16,13 +20,14 @@ export default function Home() {
           <Placeholder label="AI chat" />
         </Panel>
         <Panel title="Portfolio Heatmap" className="col-span-3 row-span-2">
-          <Placeholder label="Heatmap" />
+          <PortfolioHeatmap />
         </Panel>
         <Panel title="P&L" className="col-span-3 row-span-2">
-          <Placeholder label="P&L chart" />
+          <PnlChart />
         </Panel>
         <Panel title="Positions & Trade" className="col-span-3 row-span-2">
-          <Placeholder label="Positions table / trade bar" />
+          <TradeBar />
+          <PositionsTable />
         </Panel>
       </main>
     </div>

@@ -21,3 +21,16 @@ export interface Portfolio {
   total_value: number
   positions: Position[]
 }
+
+export type TradeSide = 'buy' | 'sell'
+
+export interface TradeRequest {
+  ticker: string
+  quantity: number
+  side: TradeSide
+}
+
+export interface PortfolioSnapshot {
+  total_value: number
+  recorded_at: string
+}
