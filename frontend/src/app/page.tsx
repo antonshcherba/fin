@@ -1,7 +1,7 @@
 import { ChatPanel } from '@/components/ChatPanel'
 import { Header } from '@/components/Header'
 import { MainChart } from '@/components/MainChart'
-import { Panel, Placeholder } from '@/components/Panel'
+import { Panel } from '@/components/Panel'
 import { PnlChart } from '@/components/PnlChart'
 import { PortfolioHeatmap } from '@/components/PortfolioHeatmap'
 import { PositionsTable } from '@/components/PositionsTable'
