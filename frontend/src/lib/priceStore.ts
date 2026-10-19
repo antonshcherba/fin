@@ -9,6 +9,8 @@ export interface PriceState {
   status: ConnectionStatus
   prices: Record<string, PriceTick>
   history: Record<string, number[]>
+  /** First price seen per ticker since page load; baseline for the change %. */
+  open: Record<string, number>
 }
 
 type EventSourceFactory = (url: string) => EventSource
@@ -68,7 +70,7 @@ export function parsePriceMessage(data: string): PriceTick[] {
 }
 
 export class PriceStore {
-  private state: PriceState = { status: 'connecting', prices: {}, history: {} }
+  private state: PriceState = { status: 'connecting', prices: {}, history: {}, open: {} }
   private listeners = new Set<() => void>()
   private source: EventSource | null = null
   private retryTimer: ReturnType<typeof setTimeout> | null = null
@@ -143,11 +145,13 @@ export class PriceStore {
     if (ticks.length === 0) return
     const prices = { ...this.state.prices }
     const history = { ...this.state.history }
+    const open = { ...this.state.open }
     for (const t of ticks) {
       prices[t.ticker] = t
+      open[t.ticker] ??= t.price
       history[t.ticker] = [...(history[t.ticker] ?? []), t.price].slice(-MAX_HISTORY)
     }
-    this.setState({ prices, history })
+    this.setState({ prices, history, open })
   }
 }
 

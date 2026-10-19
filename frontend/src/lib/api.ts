@@ -42,6 +42,21 @@ export function normalizeHistory(raw: unknown): PortfolioSnapshot[] {
   })
 }
 
+/** Accepts a bare array or an object wrapping one under `watchlist` / `tickers`; entries may be strings or `{ticker}` objects. */
+export function normalizeWatchlist(raw: unknown): string[] {
+  const list = Array.isArray(raw)
+    ? raw
+    : raw && typeof raw === 'object'
+      ? ((raw as Record<string, unknown>).watchlist ?? (raw as Record<string, unknown>).tickers)
+      : null
+  if (!Array.isArray(list)) return []
+  const tickers = list.flatMap((e) => {
+    const t = typeof e === 'string' ? e : e && typeof e === 'object' ? (e as { ticker?: unknown }).ticker : null
+    return typeof t === 'string' && t ? [t.toUpperCase()] : []
+  })
+  return [...new Set(tickers)]
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body?: unknown) =>
@@ -53,6 +68,13 @@ export const api = {
     method: 'POST',
     body: JSON.stringify({ message }),
   }),
+  getWatchlist: async () => normalizeWatchlist(await request<unknown>('/api/watchlist')),
+  addToWatchlist: (ticker: string) => request<unknown>('/api/watchlist', {
+    method: 'POST',
+    body: JSON.stringify({ ticker }),
+  }),
+  removeFromWatchlist: (ticker: string) =>
+    request<unknown>(`/api/watchlist/${encodeURIComponent(ticker)}`, { method: 'DELETE' }),
   trade: (req: TradeRequest) => request<unknown>('/api/portfolio/trade', {
     method: 'POST',
     body: JSON.stringify(req),
