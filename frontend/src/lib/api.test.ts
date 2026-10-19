@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, api, normalizeHistory } from './api'
+import { ApiError, api, normalizeHistory, normalizeWatchlist } from './api'
 
 const mockFetch = (res: Partial<Response> & { json?: () => Promise<unknown> }) =>
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: 'OK', ...res }))
@@ -61,5 +61,33 @@ describe('api.trade', () => {
       '/api/portfolio/trade',
       expect.objectContaining({ method: 'POST', body: '{"ticker":"AAPL","quantity":2,"side":"buy"}' }),
     )
+  })
+})
+
+describe('normalizeWatchlist', () => {
+  it('accepts strings, ticker objects and wrapped lists, uppercased and deduped', () => {
+    expect(normalizeWatchlist(['aapl', 'MSFT', 'AAPL'])).toEqual(['AAPL', 'MSFT'])
+    expect(normalizeWatchlist([{ ticker: 'nvda', price: 1 }, { nope: 1 }])).toEqual(['NVDA'])
+    expect(normalizeWatchlist({ watchlist: ['V'] })).toEqual(['V'])
+    expect(normalizeWatchlist({ tickers: [{ ticker: 'JPM' }] })).toEqual(['JPM'])
+  })
+
+  it('returns an empty list for anything else', () => {
+    expect(normalizeWatchlist(null)).toEqual([])
+    expect(normalizeWatchlist({})).toEqual([])
+    expect(normalizeWatchlist('x')).toEqual([])
+  })
+})
+
+describe('watchlist requests', () => {
+  it('POSTs the ticker and DELETEs by path', async () => {
+    mockFetch({ json: async () => ({}) })
+    await api.addToWatchlist('AAPL')
+    await api.removeFromWatchlist('BRK.B')
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls
+    expect(calls[0][0]).toBe('/api/watchlist')
+    expect(calls[0][1]).toMatchObject({ method: 'POST', body: '{"ticker":"AAPL"}' })
+    expect(calls[1][0]).toBe('/api/watchlist/BRK.B')
+    expect(calls[1][1]).toMatchObject({ method: 'DELETE' })
   })
 })

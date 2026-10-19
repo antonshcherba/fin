@@ -64,6 +64,14 @@ describe('PriceStore', () => {
     expect(snap.history.AAPL).toEqual([190, 191])
   })
 
+  it('keeps the first price seen as the open baseline', () => {
+    const store = makeStore()
+    store.start()
+    last().emit({ ticker: 'AAPL', price: 190 })
+    last().emit({ ticker: 'AAPL', price: 195 })
+    expect(store.getSnapshot().open.AAPL).toBe(190)
+  })
+
   it('notifies subscribers and returns a new snapshot per change', () => {
     const store = makeStore()
     const listener = vi.fn()
