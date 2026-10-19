@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '@/lib/api'
+import { onWatchlistChanged } from '@/lib/watchlistEvents'
 
 export interface WatchlistState {
   tickers: string[]
@@ -25,8 +26,15 @@ export function useWatchlist(): WatchlistState {
       .then((t) => !cancelled && setTickers(t))
       .catch((e) => !cancelled && setError(message(e)))
       .finally(() => !cancelled && setLoaded(true))
+    const off = onWatchlistChanged(() => {
+      api
+        .getWatchlist()
+        .then((t) => !cancelled && setTickers(t))
+        .catch((e) => !cancelled && setError(message(e)))
+    })
     return () => {
       cancelled = true
+      off()
     }
   }, [])
 

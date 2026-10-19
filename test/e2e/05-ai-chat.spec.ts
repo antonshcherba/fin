@@ -32,9 +32,11 @@ test('AI-executed trade and watchlist change appear inline and are applied', asy
   await expect(page.getByTestId('position-NVDA')).toBeVisible()
 })
 
-// fin-5lv: the watchlist panel never subscribes to the chat's watchlist-changed event.
-test.fixme('AI watchlist change shows up in the watchlist panel without a reload', async ({ page }) => {
+test('AI watchlist change shows up in the watchlist panel without a reload', async ({ page }) => {
   await openApp(page)
+  await expect(page.getByTestId('watch-PYPL')).toHaveCount(0)
+  await say(page, 'add PYPL to watchlist')
+  await expect(page.getByTestId('watch-PYPL')).toBeVisible()
   await say(page, 'remove PYPL from watchlist')
   await expect(page.getByTestId('watch-PYPL')).toHaveCount(0)
 })

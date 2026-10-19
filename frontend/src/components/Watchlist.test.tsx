@@ -2,6 +2,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { selectionStore } from '@/lib/selectionStore'
+import { notifyWatchlistChanged } from '@/lib/watchlistEvents'
 import type { PriceState } from '@/lib/priceStore'
 import type { PriceTick } from '@/lib/types'
 import { Watchlist } from './Watchlist'
@@ -153,5 +154,13 @@ describe('Watchlist', () => {
     mocks.getWatchlist.mockResolvedValue([])
     render(<Watchlist />)
     expect(await screen.findByTestId('watchlist-empty')).toBeInTheDocument()
+  })
+
+  it('refetches when the AI changes the watchlist', async () => {
+    render(<Watchlist />)
+    expect(await screen.findByTestId('watch-AAPL')).toBeInTheDocument()
+    mocks.getWatchlist.mockResolvedValue(['AAPL', 'MSFT', 'PYPL'])
+    act(() => notifyWatchlistChanged())
+    expect(await screen.findByTestId('watch-PYPL')).toBeInTheDocument()
   })
 })
