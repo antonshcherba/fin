@@ -1,0 +1,40 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-surface-2: #1c2230;
+  --color-border: #30363d;
+  --color-fg: #e6edf3;
+  --color-muted: #8b949e;
+  --color-accent: #ecad0a;
+  --color-primary: #209dd7;
+  --color-secondary: #753991;
+  --color-up: #3fb950;
+  --color-down: #f85149;
+
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* Price flash: the class is applied for one render and the transition fades it out. */
+.flash-up {
+  background-color: color-mix(in srgb, var(--color-up) 35%, transparent);
+}
+.flash-down {
+  background-color: color-mix(in srgb, var(--color-down) 35%, transparent);
+}
+.flash-fade {
+  transition: background-color 500ms ease-out;
+}
