@@ -34,3 +34,23 @@ export interface PortfolioSnapshot {
   total_value: number
   recorded_at: string
 }
+
+export interface ChatTrade {
+  ticker: string
+  side: TradeSide
+  quantity: number
+  price?: number
+  error?: string | null
+}
+
+export interface ChatWatchlistChange {
+  ticker: string
+  action: 'add' | 'remove'
+  error?: string | null
+}
+
+export interface ChatResponse {
+  message: string
+  trades?: ChatTrade[]
+  watchlist_changes?: ChatWatchlistChange[]
+}

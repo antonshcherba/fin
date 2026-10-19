@@ -1,4 +1,4 @@
-import type { Portfolio, PortfolioSnapshot, TradeRequest } from './types'
+import type { ChatResponse, Portfolio, PortfolioSnapshot, TradeRequest } from './types'
 
 export class ApiError extends Error {
   constructor(
@@ -49,6 +49,10 @@ export const api = {
   del: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
   getPortfolio: () => request<Portfolio>('/api/portfolio'),
   getPortfolioHistory: async () => normalizeHistory(await request<unknown>('/api/portfolio/history')),
+  chat: (message: string) => request<ChatResponse>('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify({ message }),
+  }),
   trade: (req: TradeRequest) => request<unknown>('/api/portfolio/trade', {
     method: 'POST',
     body: JSON.stringify(req),

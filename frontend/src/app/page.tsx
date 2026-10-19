@@ -1,3 +1,4 @@
+import { ChatPanel } from '@/components/ChatPanel'
 import { Header } from '@/components/Header'
 import { Panel, Placeholder } from '@/components/Panel'
 import { PnlChart } from '@/components/PnlChart'
@@ -16,9 +17,7 @@ export default function Home() {
         <Panel title="Chart" className="col-span-6 row-span-4">
           <Placeholder label="Main chart" />
         </Panel>
-        <Panel title="AI Assistant" className="col-span-3 row-span-6">
-          <Placeholder label="AI chat" />
-        </Panel>
+        <ChatPanel className="col-span-3 row-span-6" />
         <Panel title="Portfolio Heatmap" className="col-span-3 row-span-2">
           <PortfolioHeatmap />
         </Panel>
